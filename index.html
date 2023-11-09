@@ -6,31 +6,40 @@
     <title>Nagorno-Karabakh Data Repository</title>
 </head>
 <body>
-    <h1>File List</h1>
-    <ul>
-        <!-- Links will be generated dynamically using JavaScript -->
-    </ul>
+    <h1>Nagorno-Karabakh Data Repository</h1>
+    <ul id="file-list"></ul>
 
     <script>
-        // Fetch the file list from GitHub API
-        fetch('https://api.github.com/repos/crisisgroup/nk-data-repo/contents/')
-            .then(response => response.json())
-            .then(data => {
-                // Filter out directories
-                const files = data.filter(item => item.type === 'file');
-                
-                // Generate links dynamically
-                const ul = document.querySelector('ul');
-                files.forEach(file => {
-                    const li = document.createElement('li');
-                    const a = document.createElement('a');
-                    a.href = file.html_url;
-                    a.textContent = file.name;
-                    li.appendChild(a);
-                    ul.appendChild(li);
-                });
-            })
-            .catch(error => console.error('Error fetching file list:', error));
+        const fileListElement = document.getElementById('file-list');
+
+        function fetchFiles(url) {
+            fetch(url)
+                .then(response => response.json())
+                .then(data => {
+                    // Filter out directories
+                    const files = data.filter(item => item.type === 'file');
+
+                    // Generate links dynamically
+                    files.forEach(file => {
+                        const li = document.createElement('li');
+                        const a = document.createElement('a');
+                        a.href = file.html_url;
+                        a.textContent = file.name;
+                        li.appendChild(a);
+                        fileListElement.appendChild(li);
+                    });
+
+                    // Recursively fetch files from subdirectories
+                    const subdirectories = data.filter(item => item.type === 'dir');
+                    subdirectories.forEach(subdirectory => {
+                        fetchFiles(subdirectory.url);
+                    });
+                })
+                .catch(error => console.error('Error fetching file list:', error));
+        }
+
+        // Initial fetch for the root directory
+        fetchFiles('https://api.github.com/repos/CrisisGroup/nk-data-repo/contents/');
     </script>
 </body>
 </html>
